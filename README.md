@@ -1,2 +1,2 @@
 # jinjing365
-deal with enter permits for Beijing 365 days
+deal with enter permits for Beijing 365 days (outside the sixth ring)
