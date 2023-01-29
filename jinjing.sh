@@ -1,15 +1,31 @@
 #! /bin/sh
 
+function is_macos()
+{
+    local os="${OSTYPE/"darwin"//}"
+    if [ "$os" != "$OSTYPE" ]; then 
+        # darwin: macos
+        return 1
+    else 
+        return 0
+    fi
+}
+
+is_macos
+IS_MAC=$?
+
 function main()
 {
     # constant
     local stateurl="https://jjz.jtgl.beijing.gov.cn/pro//applyRecordController/stateList"
+    local issueurl="https://jjz.jtgl.beijing.gov.cn/pro//applyRecordController/insertApplyRecord"
     local agent="okhttp-okgo/jeasonlzy"
     local host="jjz.jtgl.beijing.gov.cn"
     local content="application/json;charset=utf-8"
     local lang="zh-CN,zh;q=0.8"
     
     # read config
+    local user=$(grep '^user=' config.ini | head -1 | awk -F'=' '{print $2}')
     local idcard=$(grep '^idcard=' config.ini | head -1 | awk -F'=' '{print $2}')
     local vehicle=$(grep '^vehicle=' config.ini | head -1 | awk -F'=' '{print $2}')
     local auth=$(grep '^authorization=' config.ini | head -1 | awk -F'=' '{print $2}')
@@ -28,14 +44,15 @@ function main()
     stateheader[3]="source:${source}"
     stateheader[4]="authorization:${auth}"
     stateheader[5]="Content-Type:${content}"
-    stateheader[6]="Content-Length:${#statereq}"
-    stateheader[7]="Host:${host}"
-    stateheader[8]="Connection:Keep-Alive"
-    stateheader[9]="Accept-Encoding:gzip"
+    stateheader[6]="Host:${host}"
+    stateheader[7]="Connection:Keep-Alive"
+    stateheader[8]="Accept-Encoding:gzip"
     # prevent whole time be truncated to only date
     # add time alone here..
     # stateheader[10]="time:$(date '+%Y-%m-%d %H:%M:%S')"
     local time="time:$(date '+%Y-%m-%d %H:%M:%S')"
+    # for reuse, add content-length alone here..
+    local length="Content-Length:${#statereq}"
     # size, what does it mean? seem to be optional..
     # stateheader[11]="size:459"
     local headers=""
@@ -43,8 +60,8 @@ function main()
     do
         headers="${headers} -H ${var}"
     done
-    echo "state headers: ${headers} -H ${time}" 1>&2
-    local resp=$(curl -s ${headers} -H "${time}" -d "${statereq}" "${stateurl}")
+    echo "state headers: ${headers} -H ${time} -H ${length}" 1>&2
+    local resp=$(curl -s ${headers} -H "${time}" -H ${length} -d "${statereq}" "${stateurl}")
     echo "${resp}" | jq  '.'  1>&2
     # for debug purpose
     # resp=$(cat demo.txt)
@@ -86,8 +103,18 @@ function main()
     fi
 
     echo "find match vehicle <${vehicle}> at index: ${index}"
+    # use by issue request later..
+    local vid=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].vId")
+    local hpzl=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].hpzl")
+    if [ -z "${vid}" -o "${vid}" = "null" -o \
+         -z "${hpzl}" -o "${hpzl}" = "null" ]; then 
+        echo "some fields in state response null, fatal error!"
+        exit 1
+    fi
+
+    local issuedate=$(date '+%Y-%m-%d')
     local psize=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx|length")
-    echo "psize: ${psize}"
+    # echo "psize: ${psize}"
     if [ -n "${psize}" -a "${psize}" != "null" -a ${psize} -gt 0 ]; then 
         # has permits, check if in effect
         local status=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx[0].blztmc")
@@ -125,6 +152,16 @@ function main()
                     echo "still in effect, try ${expire} days later .."
                     exit 0
                 fi
+
+                # make new permit begin day 1 large than the previous end day..
+                local to=$((expire+1))
+                # mac date performs differs with other unix..
+                if [ ${IS_MAC} -eq 1 ]; then 
+                    issuedate=$(date "-v+${to}d" '+%Y-%m-%d')
+                else 
+                    issuedate=$(date '+%Y-%m-%d' -d "+${to} days")
+                fi
+                echo "issue new permit from ${issuedate}"
                 ;;
             审核中)
                 echo "still in verify, try later.."
@@ -139,8 +176,14 @@ function main()
         echo "no permit (${psize}) under ${idcard}, try issue new.."
     fi
 
-
     # issue new permit request
+    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${user}" --arg sfzshm "${idcard}" --arg timestamp $(date "+%s") -c '{ hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $sfzshm, sfzshm: $sfzshm, xxdz, sqdzbdjd, sqdzbdwd }')
+    echo "issue req: ${issuereq}" 1>&2
+    time="time:$(date '+%Y-%m-%d %H:%M:%S')"
+    length="Content-Length:${#issuereq}"
+    echo "issue headers: ${headers} -H ${time} -H ${length}" 1>&2
+    resp=$(curl -v ${headers} -H "${time}" -H ${length} -d "${issuereq}" "${issueurl}")
+    echo "${resp}" | jq  '.'  1>&2
 }
 
 main "$@"
