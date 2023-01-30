@@ -25,17 +25,18 @@ function main()
     local lang="zh-CN,zh;q=0.8"
     
     # read config
-    local user=$(grep '^user=' config.ini | head -1 | awk -F'=' '{print $2}')
-    local idcard=$(grep '^idcard=' config.ini | head -1 | awk -F'=' '{print $2}')
+    local userid=$(grep '^userid=' config.ini | head -1 | awk -F'=' '{print $2}')
     local vehicle=$(grep '^vehicle=' config.ini | head -1 | awk -F'=' '{print $2}')
     local auth=$(grep '^authorization=' config.ini | head -1 | awk -F'=' '{print $2}')
     local source=$(grep '^source=' config.ini | head -1 | awk -F'=' '{print $2}')
+    local drivername=$(grep '^drivername=' config.ini | head -1 | awk -F'=' '{print $2}')
+    local driverid=$(grep '^driverid=' config.ini | head -1 | awk -F'=' '{print $2}')
     local localip=$(grep '^localip=' config.ini | head -1 | awk -F'=' '{print $2}')
 
     # query current status
     # note: s-source should be quoted to prevent jq complain:
     # jq: error: syntax error, unexpected '-', expecting '}' (Unix shell quoting issues?) at <top-level>, line 1:
-    local statereq=$(cat statereq.json | jq --arg sfzshm "${idcard}" --arg timestamp $(date "+%s") -c '{ v, sfzshm: $sfzshm, "s-source", timestamp: $timestamp }')
+    local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
     echo "state req: ${statereq}" 1>&2
     local stateheader=()
     stateheader[0]="ip:${localip}"
@@ -75,9 +76,15 @@ function main()
     echo "query permits status ok: ${msg}"
 
     # check if any permits there
+    local id=$(echo "${resp}" | jq -r '.data.sfzmhm')
+    if [ -z "${id}" -o "${id}" = "null" -o "${id}" != "${userid}" ]; then 
+        echo "id [${id}] from user token does not match given [${userid}], fatal error!"
+        exit 1
+    fi
+
     local vsize=$(echo "${resp}" | jq -r '.data.bzclxx|length')
     if [ -z "${vsize}" -o "${vsize}" = "null" -o ${vsize} -eq 0 ]; then 
-        echo "no vehicle (${vsize}) under ${idcard}, please add vehicle first!"
+        echo "no vehicle (${vsize}) under [${userid}], please add vehicle first!"
         exit 0
     fi
 
@@ -98,12 +105,12 @@ function main()
 
     if [ ${find} -eq 0 ]; then 
         # match reach end
-        echo "no vehicle named ${vehicle} under ${idcard}, fatal error!"
+        echo "no vehicle named <${vehicle}> under [${userid}], fatal error!"
         exit 1
     fi
 
     echo "find match vehicle <${vehicle}> at index: ${index}"
-    # use by issue request later..
+    # vehicle info needed later in permit issue request..
     local vid=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].vId")
     local hpzl=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].hpzl")
     if [ -z "${vid}" -o "${vid}" = "null" -o \
@@ -131,7 +138,7 @@ function main()
              exit 1
         fi
     
-        echo "${man} [${card}] issue permits on <${vehicle}> with type ${type} status: ${status}"
+        echo "${man} [${card}] issue permits on <${vehicle}> with type '${type}' status: ${status}"
         # status may 审核通过(生效中) or 审核通过(待生效) or 审核中
         #if [ "${status:0:4}" = "审核通过" ]; then 
         case ${status} in
@@ -153,15 +160,13 @@ function main()
                     exit 0
                 fi
 
-                # make new permit begin day 1 large than the previous end day..
-                local to=$((expire+1))
                 # mac date performs differs with other unix..
                 if [ ${IS_MAC} -eq 1 ]; then 
-                    issuedate=$(date "-v+${to}d" '+%Y-%m-%d')
+                    issuedate=$(date "-v+${expire}d" '+%Y-%m-%d')
                 else 
-                    issuedate=$(date '+%Y-%m-%d' -d "+${to} days")
+                    issuedate=$(date '+%Y-%m-%d' -d "+${expire} days")
                 fi
-                echo "issue new permit from ${issuedate}"
+                echo "new permit will start from ${issuedate}"
                 ;;
             审核中)
                 echo "still in verify, try later.."
@@ -173,17 +178,27 @@ function main()
                 ;;
         esac
     else 
-        echo "no permit (${psize}) under ${idcard}, try issue new.."
+        echo "no permit (${psize}) under [${userid}], try issue new.."
     fi
 
     # issue new permit request
-    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${user}" --arg sfzshm "${idcard}" --arg timestamp $(date "+%s") -c '{ hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $sfzshm, sfzshm: $sfzshm, xxdz, sqdzbdjd, sqdzbdwd }')
+    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s") -c '{ hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
     echo "issue req: ${issuereq}" 1>&2
     time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     length="Content-Length:${#issuereq}"
     echo "issue headers: ${headers} -H ${time} -H ${length}" 1>&2
-    resp=$(curl -v ${headers} -H "${time}" -H ${length} -d "${issuereq}" "${issueurl}")
+    resp=$(curl -s ${headers} -H "${time}" -H ${length} -d "${issuereq}" "${issueurl}")
     echo "${resp}" | jq  '.'  1>&2
+    # resp=$(cat demo.txt)
+    ret=$(echo "${resp}" | jq -r '.code')
+    msg=$(echo "${resp}" | jq -r '.msg')
+    if [ -z ${ret} -o "${ret}" = "null" -o ${ret} -ne 200 ]; then 
+        echo "issue new permit failed, code: ${ret}, msg: ${msg}"
+        exit 1
+    fi
+
+    echo "issue new permit status ok: ${msg}"
+    exit 0
 }
 
 main "$@"
