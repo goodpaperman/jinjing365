@@ -106,13 +106,24 @@ function main()
 
     echo "query permits status ok: ${msg}"
 
-    # check if any permits there
+    # check cardid 
     local id=$(echo "${resp}" | jq -r '.data.sfzmhm')
     if [ -z "${id}" -o "${id}" = "null" -o "${id}" != "${userid}" ]; then 
         echo "id [${id}] from user token does not match given [${userid}], fatal error!"
         exit 1
     fi
 
+    local outside6ring="进京证（六环外）"
+    # get permit type form response differs with above result: 进京证(六环外)
+    # mainly different is the brackets..
+    #
+    # local outside6ring=$(echo "${resp}" | jq -r '.data.elzmc')
+    # if [ -z "${outside6ring}" -o "${outside6ring}" = "null" -o "${outside6ring}" != "进京证(六环外)" ]; then 
+    #     echo "permit type [${outside6ring}] incorrect, fatal error!"
+    #     exit 1
+    # fi
+
+    # check if any permits there
     local vsize=$(echo "${resp}" | jq -r '.data.bzclxx|length')
     if [ -z "${vsize}" -o "${vsize}" = "null" -o ${vsize} -eq 0 ]; then 
         echo "no vehicle (${vsize}) under [${userid}], please add vehicle first!"
@@ -154,6 +165,13 @@ function main()
     local psize=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx|length")
     # echo "psize: ${psize}"
     if [ -n "${psize}" -a "${psize}" != "null" -a ${psize} -gt 0 ]; then 
+        # if have more than one permit, one of them must be inside 6th ring
+        # in that case, we can not issue new permit with type outside 6th ring..
+        if [ ${psize} -gt 1 ]; then 
+            echo "have more than 1 permits, can not issue new permit!"
+            exit 1
+        fi
+
         # has permits, check if in effect
         local status=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx[0].blztmc")
         local man=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx[0].jsrxm")
@@ -167,6 +185,11 @@ function main()
              -z "$v" -o "$v" = "null" -o "$v" != "${vehicle}" ]; then 
              echo "some fields in state response null, fatal error!"
              exit 1
+        fi
+
+        if [ "${type}" != "${outside6ring}" ]; then 
+            echo "have permits with type <${type}> != <${outside6ring}>, can not issue new permit!"
+            exit 1
         fi
     
         echo "${man} [${card}] issue permits on <${vehicle}> with type '${type}' status: ${status}"
