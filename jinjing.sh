@@ -1,5 +1,9 @@
 #! /bin/sh
 
+# @brief: is MacOS platform
+#         mac date a little different with other 
+# @retval: 0 - no
+# @retval: 1 - yes
 function is_macos()
 {
     local os="${OSTYPE/"darwin"//}"
@@ -15,8 +19,11 @@ is_macos
 IS_MAC=$?
 
 
+# @brief: check command existent before run our script
+#         useful especially in msys2 on windows
 # @param: cmd to check
-# @retval: 0 - exist; 1 - not exist
+# @retval: 0 - exist
+# @retval: 1 - not exist
 function check_cmd()
 {
     local cmd=$1
@@ -92,7 +99,7 @@ function main()
     # resp=$(cat demo.txt)
     local ret=$(echo "${resp}" | jq -r '.code')
     local msg=$(echo "${resp}" | jq -r '.msg')
-    if [ -z ${ret} -o "${ret}" = "null" -o ${ret} -ne 200 ]; then 
+    if [ -z "${ret}" -o "${ret}" = "null" -o ${ret} -ne 200 ]; then 
         echo "query permits status failed, code: ${ret}, msg: ${msg}"
         exit 1
     fi
@@ -202,7 +209,14 @@ function main()
                 ;;
         esac
     else 
-        echo "no permit (${psize}) under [${userid}], try issue new.."
+        local bnbzyy=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bnbzyy")
+        if [ "${bnbzyy}" = "每个用户同一时间只能为一辆机动车申请办理进京证。" ]; then 
+            echo "no permit(${psize}) under <${vehicle}>, but some permits under other vehicles exist.."
+            echo "can only issue new permit when no permits exists under [${userid}], do a check"
+            exit 1
+        fi
+
+        echo "no permit(${psize}) under <${vehicle}>, and no permits under [${userid}], try issue new.."
     fi
 
     # issue new permit request
@@ -216,7 +230,7 @@ function main()
     # resp=$(cat demo.txt)
     ret=$(echo "${resp}" | jq -r '.code')
     msg=$(echo "${resp}" | jq -r '.msg')
-    if [ -z ${ret} -o "${ret}" = "null" -o ${ret} -ne 200 ]; then 
+    if [ -z "${ret}" -o "${ret}" = "null" -o ${ret} -ne 200 ]; then 
         echo "issue new permit failed, code: ${ret}, msg: ${msg}"
         exit 1
     fi
