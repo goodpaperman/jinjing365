@@ -5,7 +5,6 @@ sh jinjing.sh 2>error.txt
 # prepare
 see config.ini
 ```
-# idcard who own the car
 userid=150121198603226428
 vehicle=津ADY1951
 authorization=f36abdfa-8878-46bf-91d9-5666f808e9a4
@@ -41,6 +40,7 @@ only issue new permit in following situation:
 * no permits under this car or
 * has permits outside the sixth ring and
 * this permit has expire day less or equal 1
+
 which is:
 (condition1 && (condition2 || (condition3 && condtion4)))
 # supplement
