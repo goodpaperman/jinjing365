@@ -14,6 +14,30 @@ function is_macos()
 is_macos
 IS_MAC=$?
 
+
+# @param: cmd to check
+# @retval: 0 - exist; 1 - not exist
+function check_cmd()
+{
+    local cmd=$1
+    type "${cmd}" >/dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        echo "please install ${cmd} before run this script, fatal error!"
+        exit -1
+    else 
+        echo "check ${cmd} ok"
+    fi
+}
+
+# do environment check first
+check_cmd "jq"
+check_cmd "curl"
+check_cmd "head"
+check_cmd "cat"
+check_cmd "awk"
+check_cmd "grep"
+check_cmd "date"
+
 function main()
 {
     # constant
