@@ -66,5 +66,5 @@ still in effect, try 7 days later ..
 # see detail
 [https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
 # sponsorship
+reward me with a cup of tea if you think I'm doing well..
 ![wechat](https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801)
-reward me a cup of tea if you think I'm doing well..
