@@ -74,7 +74,7 @@ add oneline in your linux crontab:
 ```
 change directory to where you place jinjing.sh, logs will be 'jinjing.log', detail logs will be 'verbose.log'
 
-other platform like windows can do the same thing with 'schedule tasks' and 'git bash', command with be:
+other platform like windows can do the same thing with 'schedule tasks' & 'git bash' & 'jq for windows', command with be:
 ```
 cd /path/to/jinjing365
 bash.exe jinjing.sh >> jinjing.log 2>>verbose.log
