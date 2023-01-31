@@ -1,5 +1,5 @@
 # jinjing365
-deal with enter permits for vehicless to Beijing 365 days (outside the sixth ring)
+automatically issue enter permits (outside the sixth ring) of Beijing 365 days
 # usage
 sh jinjing.sh 2>verbose.txt
 # prepare
@@ -35,6 +35,7 @@ can obtain by following command:
 select one that not loopback (127.0.0.1)
 # note
 support more than one car under same cardid, need indicate the car number (vehicle) in config.ini, this field is required
+
 only issue new permit in following situation:
 * no permits under other car belongs to this user and
 * no permits under this car or
@@ -42,9 +43,11 @@ only issue new permit in following situation:
 * this permit has expire day less or equal 1
 
 which is:
+
 (condition1 && (condition2 || (condition3 && condtion4)))
 # supplement
 if you have a permit outside the sixth ring, you can issue new permit inside the sixth ring, but NOT vice versa
+
 if you have a permit on car A and you can not issue new permit on car B/C/D... that belong to this cardid too
 # effect
 ```
@@ -63,6 +66,13 @@ find match vehicle <津ADY1951> at index: 0
 expire day: 7, from 2023-01-30 to 2023-02-05
 still in effect, try 7 days later ..
 ```
+# schedule every day
+add oneline in your linux crontab:
+```
+> crontab -e
+0 12 * * * cd /home/users/yunhai01/code/jinjing365; date >> jinjing.log; ./jinjing.sh >> jinjing.log 2>verbose.log 
+```
+change directory to where you store jinjing.sh, logs will be jinjing.log, detail logs will be verbose.log
 # see detail
 [https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
 # sponsorship
