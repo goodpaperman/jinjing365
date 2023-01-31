@@ -51,7 +51,7 @@ if you have a permit outside the sixth ring, you can issue new permit inside the
 if you have a permit on car A and you can not issue new permit on car B/C/D... that belong to this cardid too
 # effect
 ```
-> sh jinjing.sh 2>verbose.txt
+> sh jinjing.sh 2>verbose.log
 check jq ok
 check curl ok
 check head ok
@@ -70,9 +70,15 @@ still in effect, try 7 days later ..
 add oneline in your linux crontab:
 ```
 > crontab -e
-0 12 * * * cd /home/users/yunhai01/code/jinjing365; date >> jinjing.log; ./jinjing.sh >> jinjing.log 2>verbose.log 
+0 12 * * * cd /home/users/yunhai01/code/jinjing365; date >> jinjing.log; sh jinjing.sh >> jinjing.log 2>>verbose.log 
 ```
-change directory to where you store jinjing.sh, logs will be jinjing.log, detail logs will be verbose.log
+change directory to where you place jinjing.sh, logs will be 'jinjing.log', detail logs will be 'verbose.log'
+
+other platform like windows can do the same thing with 'schedule tasks' and 'git bash', command with be:
+```
+cd /path/to/jinjing365
+bash.exe jinjing.sh >> jinjing.log 2>>verbose.log
+```
 # see detail
 [https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
 # sponsorship
