@@ -1,7 +1,7 @@
 # jinjing365
 deal with enter permits for vehicless to Beijing 365 days (outside the sixth ring)
 # usage
-sh jinjing.sh 2>error.txt
+sh jinjing.sh 2>verbose.txt
 # prepare
 see config.ini
 ```
@@ -48,7 +48,7 @@ if you have a permit outside the sixth ring, you can issue new permit inside the
 if you have a permit on car A and you can not issue new permit on car B/C/D... that belong to this cardid too
 # effect
 ```
-> sh jinjing.sh 2>error.txt
+> sh jinjing.sh 2>verbose.txt
 check jq ok
 check curl ok
 check head ok
@@ -59,9 +59,12 @@ check date ok
 query permits status ok: 用户办证信息查询成功!
 try 津ADY1951 
 find match vehicle <津ADY1951> at index: 0
-张钰 [150121198603226428] issue permits on <津ADY1951> with type '进京证（六环外）' status: 审核通过(生效中)
+云海 [150121198603226428] issue permits on <津ADY1951> with type '进京证（六环外）' status: 审核通过(生效中)
 expire day: 7, from 2023-01-30 to 2023-02-05
 still in effect, try 7 days later ..
 ```
 # see detail
-[https://www.cnblogs.com/goodcitizen/p/16598268.html](https://www.cnblogs.com/goodcitizen/p/16598268.html)
+[https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
+# sponsorship
+![wechat](https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801)
+reward me a cup of tea if you think I'm doing well..
