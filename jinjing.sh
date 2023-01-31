@@ -207,7 +207,7 @@ function main()
                     exit 1
                 fi
     
-                echo "expire day: ${expire}, from ${daybeg} to ${dayend}"
+                echo "in effect from ${daybeg} to ${dayend}"
                 # can issue new permits in last day
                 if [ ${expire} -gt 1 ]; then 
                     echo "still in effect, try ${expire} days later .."
