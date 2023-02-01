@@ -1,7 +1,7 @@
 # jinjing365
 automatically issue enter permits (outside the sixth ring) of Beijing 365 days
 # usage
-sh jinjing.sh 2>verbose.txt
+sh jinjing.sh 2>verbose.log
 # prepare
 see config.ini
 ```
@@ -83,4 +83,5 @@ bash.exe jinjing.sh >> jinjing.log 2>>verbose.log
 [https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
 # sponsorship
 buy me a cup of tea, I may motivated to develop a new version to get rid of package capture by VNET, using username & password to login instead..
+
 <img src="https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801" width = "400" alt="wechatpay" align=center />
