@@ -83,4 +83,5 @@ bash.exe jinjing.sh >> jinjing.log 2>>verbose.log
 [https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html](https://www.cnblogs.com/goodcitizen/p/issue_enter_permits_of_beijing_outside_sixth_ring_by_shell_scripts.html)
 # sponsorship
 reward me with a cup of tea if you think I'm doing well..
-![wechat](https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801)
+-- ![wechat](https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801)
+<img src="https://files-cdn.cnblogs.com/files/goodcitizen/wepay.bmp?t=1675132801" width = "400" alt="wechatpay" align=center />
