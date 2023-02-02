@@ -157,7 +157,7 @@ function main()
     local hpzl=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].hpzl")
     if [ -z "${vid}" -o "${vid}" = "null" -o \
          -z "${hpzl}" -o "${hpzl}" = "null" ]; then 
-        echo "some fields in state response null, fatal error!"
+        echo "some vehicle fields in state response null, fatal error!"
         exit 1
     fi
 
@@ -183,7 +183,7 @@ function main()
              -z "${card}" -o "${card}" = "null" -o \
              -z "${type}" -o "${type}" = "null" -o \
              -z "$v" -o "$v" = "null" -o "$v" != "${vehicle}" ]; then 
-             echo "some fields in state response null, fatal error!"
+             echo "some permit fields in state response null, fatal error!"
              exit 1
         fi
 
@@ -193,34 +193,43 @@ function main()
         fi
     
         echo "${man} [${card}] issue permits on <${vehicle}> with type '${type}' status: ${status}"
-        # status may 审核通过(生效中) or 审核通过(待生效) or 审核中
+        # status may 审核通过(生效中) or 审核通过(待生效) or 审核通过(已失效) or 审核中
         #if [ "${status:0:4}" = "审核通过" ]; then 
         case ${status} in
             审核通过*) 
-                local expire=$(echo "${resp}" | jq -r  ".data.bzclxx[${index}].bzxx[0].sxsyts")
                 local daybeg=$(echo "${resp}" | jq -r  ".data.bzclxx[${index}].bzxx[0].yxqs")
                 local dayend=$(echo "${resp}" | jq -r  ".data.bzclxx[${index}].bzxx[0].yxqz")
-                if [ -z "${expire}" -o "${expire}" = "null" -o \
-                     -z "${daybeg}" -o "${daybeg}" = "null" -o \
+                if [ -z "${daybeg}" -o "${daybeg}" = "null" -o \
                      -z "${dayend}" -o "${dayend}" = "null" ]; then 
-                    echo "some fields in state response null, fatal error!"
+                    echo "some permit fields(valid/invalid) in state response null, fatal error!"
                     exit 1
                 fi
     
-                echo "in effect from ${daybeg} to ${dayend}"
-                # can issue new permits in last day
-                if [ ${expire} -gt 1 ]; then 
-                    echo "still in effect, try ${expire} days later .."
-                    exit 0
-                fi
-
-                # mac date performs differs with other unix..
-                if [ ${IS_MAC} -eq 1 ]; then 
-                    issuedate=$(date "-v+${expire}d" '+%Y-%m-%d')
+                if [ "${status}" = "审核通过(已失效)" ]; then 
+                    # treate invalid permit as no permit
+                    echo "invalid permit find under <${vehicle}>, try issue new.."
                 else 
-                    issuedate=$(date '+%Y-%m-%d' -d "+${expire} days")
+                    local expire=$(echo "${resp}" | jq -r  ".data.bzclxx[${index}].bzxx[0].sxsyts")
+                    if [ -z "${expire}" -o "${expire}" = "null" ]; then 
+                        echo "some permit fields(valid) in state response null, fatal error!"
+                        exit 1
+                    fi
+
+                    echo "in effect from ${daybeg} to ${dayend}"
+                    # can issue new permits in last day
+                    if [ ${expire} -gt 1 ]; then 
+                        echo "still in effect, try ${expire} days later .."
+                        exit 0
+                    fi
+
+                    # mac date performs differs with other unix..
+                    if [ ${IS_MAC} -eq 1 ]; then 
+                        issuedate=$(date "-v+${expire}d" '+%Y-%m-%d')
+                    else 
+                        issuedate=$(date '+%Y-%m-%d' -d "+${expire} days")
+                    fi
+                    echo "new permit will start from ${issuedate}"
                 fi
-                echo "new permit will start from ${issuedate}"
                 ;;
             审核中)
                 echo "still in verify, try later.."
