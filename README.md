@@ -11,7 +11,6 @@ authorization=f36abdfa-8878-46bf-91d9-5666f808e9a4
 source=8724a2428c3f47358741f978fd082810
 drivername=云海
 driverid=150121198603226428
-localip=172.21.222.55
 ```
 modify following fields:
 * userid to car owner cardid
@@ -20,18 +19,10 @@ modify following fields:
 * source to device code
 * drivername to car driver name
 * driverid to car driver cardid
-* localip to you local ip
 ## authorization & source
 obtain by network package capture APP (e.g. VNET) under android platform
 ![vnet overview](https://files-cdn.cnblogs.com/files/goodcitizen/vnet_view.bmp?t=1675062652)
 ![vnet capture](https://files-cdn.cnblogs.com/files/goodcitizen/vnet_capture.bmp?t=1675062645)
-## localip
-can obtain by following command:
-```
-> ifconfig | grep '\binet\b'
-	inet 127.0.0.1 netmask 0xff000000 
-	inet 172.21.222.55 netmask 0xfffffe00 broadcast 172.21.223.255
-```
 select one that not loopback (127.0.0.1)
 # note
 support more than one car under same cardid, need indicate the car number (vehicle) in config.ini, this field is required

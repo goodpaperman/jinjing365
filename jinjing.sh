@@ -62,7 +62,6 @@ function main()
     local source=$(grep '^source=' config.ini | head -1 | awk -F'=' '{print $2}')
     local drivername=$(grep '^drivername=' config.ini | head -1 | awk -F'=' '{print $2}')
     local driverid=$(grep '^driverid=' config.ini | head -1 | awk -F'=' '{print $2}')
-    local localip=$(grep '^localip=' config.ini | head -1 | awk -F'=' '{print $2}')
 
     # query current status
     # note: s-source should be quoted to prevent jq complain:
@@ -70,15 +69,14 @@ function main()
     local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
     echo "state req: ${statereq}" 1>&2
     local stateheader=()
-    stateheader[0]="ip:${localip}"
-    stateheader[1]="Accept-Language:${lang}"
-    stateheader[2]="User-Agent:${agent}"
-    stateheader[3]="source:${source}"
-    stateheader[4]="authorization:${auth}"
-    stateheader[5]="Content-Type:${content}"
-    stateheader[6]="Host:${host}"
-    stateheader[7]="Connection:Keep-Alive"
-    stateheader[8]="Accept-Encoding:gzip"
+    stateheader[0]="Accept-Language:${lang}"
+    stateheader[1]="User-Agent:${agent}"
+    stateheader[2]="source:${source}"
+    stateheader[3]="authorization:${auth}"
+    stateheader[4]="Content-Type:${content}"
+    stateheader[5]="Host:${host}"
+    stateheader[6]="Connection:Keep-Alive"
+    stateheader[7]="Accept-Encoding:gzip"
     # prevent whole time be truncated to only date
     # add time alone here..
     # stateheader[10]="time:$(date '+%Y-%m-%d %H:%M:%S')"
@@ -193,7 +191,7 @@ function main()
         fi
     
         echo "${man} [${card}] issue permits on <${vehicle}> with type '${type}' status: ${status}"
-        # status may 审核通过(生效中) or 审核通过(待生效) or 审核通过(已失效) or 审核中
+        # status may 审核通过(生效中) or 审核通过(待生效) or 审核通过(已失效) or 审核中 or 失败(审核不通过) or 取消办理中 or 已取消
         #if [ "${status:0:4}" = "审核通过" ]; then 
         case ${status} in
             审核通过*) 
@@ -234,6 +232,16 @@ function main()
             审核中)
                 echo "still in verify, try later.."
                 exit 0
+                ;;
+            取消办理中)
+                echo "still in cancel progress, try later.."
+                exit 0
+                ;;
+            "失败(审核不通过)")
+                echo "previous issue rejected, try new permit"
+                ;;
+            已取消)
+                echo "previous issue cancelled, try new permit"
                 ;;
             *)
                 echo "unknown status ${status}, fatal error!"
