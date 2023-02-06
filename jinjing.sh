@@ -66,7 +66,7 @@ function main()
     # query current status
     # note: s-source should be quoted to prevent jq complain:
     # jq: error: syntax error, unexpected '-', expecting '}' (Unix shell quoting issues?) at <top-level>, line 1:
-    local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
+    local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
     echo "state req: ${statereq}" 1>&2
     local stateheader=()
     stateheader[0]="Accept-Language:${lang}"
@@ -80,7 +80,7 @@ function main()
     # prevent whole time be truncated to only date
     # add time alone here..
     # stateheader[10]="time:$(date '+%Y-%m-%d %H:%M:%S')"
-    local time="time:$(date '+%Y-%m-%d %H:%M:%S')"
+    # local time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     # for reuse, add content-length alone here..
     local length="Content-Length:${#statereq}"
     # size, what does it mean? seem to be optional..
@@ -90,8 +90,8 @@ function main()
     do
         headers="${headers} -H ${var}"
     done
-    echo "state headers: ${headers} -H ${time} -H ${length}" 1>&2
-    local resp=$(curl -s ${headers} -H "${time}" -H ${length} -d "${statereq}" "${stateurl}")
+    echo "state headers: ${headers} -H ${length}" 1>&2
+    local resp=$(curl -s ${headers} -H ${length} -d "${statereq}" "${stateurl}")
     echo "${resp}" | jq  '.'  1>&2
     # for debug purpose
     # resp=$(cat demo.txt)
@@ -260,12 +260,12 @@ function main()
     fi
 
     # issue new permit request
-    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
+    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
     echo "issue req: ${issuereq}" 1>&2
-    time="time:$(date '+%Y-%m-%d %H:%M:%S')"
+    # time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     length="Content-Length:${#issuereq}"
-    echo "issue headers: ${headers} -H ${time} -H ${length}" 1>&2
-    resp=$(curl -s ${headers} -H "${time}" -H ${length} -d "${issuereq}" "${issueurl}")
+    echo "issue headers: ${headers} -H ${length}" 1>&2
+    resp=$(curl -s ${headers} -H ${length} -d "${issuereq}" "${issueurl}")
     echo "${resp}" | jq  '.'  1>&2
     # resp=$(cat demo.txt)
     ret=$(echo "${resp}" | jq -r '.code')
