@@ -68,7 +68,7 @@ function main()
     # jq: error: syntax error, unexpected '-', expecting '}' (Unix shell quoting issues?) at <top-level>, line 1:
     local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
     echo "state req: ${statereq}" 1>&2
-    local stateheader=()
+    local stateheader
     stateheader[0]="Accept-Language:${lang}"
     stateheader[1]="User-Agent:${agent}"
     stateheader[2]="source:${source}"
