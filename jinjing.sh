@@ -68,7 +68,7 @@ function main()
     # jq: error: syntax error, unexpected '-', expecting '}' (Unix shell quoting issues?) at <top-level>, line 1:
     local statereq=$(cat statereq.json | jq --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ v, sfzmhm: $sfzmhm, "s-source", timestamp: $timestamp }')
     echo "state req: ${statereq}" 1>&2
-    local stateheader
+    local stateheader #=() adb shell not support =() initialize an array..
     stateheader[0]="Accept-Language:${lang}"
     stateheader[1]="User-Agent:${agent}"
     stateheader[2]="source:${source}"
@@ -159,7 +159,17 @@ function main()
         exit 1
     fi
 
+    local hour_now=$(date '+%H')
     local issuedate=$(date '+%Y-%m-%d')
+    if [ ${hour_now} -ge 12 ]; then 
+        # can NOT issue new permit for today if afternoon
+        if [ ${IS_MAC} -eq 1 ]; then 
+            issuedate=$(date -v+1d '+%Y-%m-%d')
+        else 
+            issuedate=$(date '+%Y-%m-%d' -d "+1 days")
+        fi
+    fi
+
     local psize=$(echo "${resp}" | jq -r ".data.bzclxx[${index}].bzxx|length")
     # echo "psize: ${psize}"
     if [ -n "${psize}" -a "${psize}" != "null" -a ${psize} -gt 0 ]; then 
@@ -226,7 +236,6 @@ function main()
                     else 
                         issuedate=$(date '+%Y-%m-%d' -d "+${expire} days")
                     fi
-                    echo "new permit will start from ${issuedate}"
                 fi
                 ;;
             审核中)
@@ -260,6 +269,7 @@ function main()
     fi
 
     # issue new permit request
+    echo "new permit will start from ${issuedate}"
     local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
     echo "issue req: ${issuereq}" 1>&2
     # time="time:$(date '+%Y-%m-%d %H:%M:%S')"
