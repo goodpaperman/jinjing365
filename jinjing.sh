@@ -91,7 +91,7 @@ function main()
         headers="${headers} -H ${var}"
     done
     echo "state headers: ${headers} -H ${length}" 1>&2
-    local resp=$(curl -s ${headers} -H ${length} -d "${statereq}" "${stateurl}")
+    local resp=$(curl -s -k ${headers} -H ${length} -d "${statereq}" "${stateurl}")
     echo "${resp}" | jq  '.'  1>&2
     # for debug purpose
     # resp=$(cat demo.txt)
@@ -275,7 +275,7 @@ function main()
     # time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     length="Content-Length:${#issuereq}"
     echo "issue headers: ${headers} -H ${length}" 1>&2
-    resp=$(curl -s ${headers} -H ${length} -d "${issuereq}" "${issueurl}")
+    resp=$(curl -s -k ${headers} -H ${length} -d "${issuereq}" "${issueurl}")
     echo "${resp}" | jq  '.'  1>&2
     # resp=$(cat demo.txt)
     ret=$(echo "${resp}" | jq -r '.code')
