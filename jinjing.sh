@@ -78,13 +78,12 @@ function main()
     stateheader[6]="Connection:Keep-Alive"
     stateheader[7]="Accept-Encoding:gzip"
     # prevent whole time be truncated to only date
-    # add time alone here..
-    # stateheader[10]="time:$(date '+%Y-%m-%d %H:%M:%S')"
-    # local time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     # for reuse, add content-length alone here..
-    local length="Content-Length:${#statereq}"
-    # size, what does it mean? seem to be optional..
-    # stateheader[11]="size:459"
+    local bytes=$(echo ${issuereq} | wc -c)
+    bytes=$((bytes-1))   # remove heading spaces and tailing \n
+    local length="Content-Length:${bytes}"
+    # note: string length != data length, especially for utf-8 characters!!
+    #local length="Content-Length:${#statereq}"
     local headers=""
     for var in "${stateheader[@]}"; 
     do
@@ -273,7 +272,9 @@ function main()
     local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
     echo "issue req: ${issuereq}" 1>&2
     # time="time:$(date '+%Y-%m-%d %H:%M:%S')"
-    length="Content-Length:${#issuereq}"
+    bytes=$(echo ${issuereq} | wc -c)
+    bytes=$((bytes-1))   # remove heading spaces and tailing \n
+    length="Content-Length:${bytes}"
     echo "issue headers: ${headers} -H ${length}" 1>&2
     resp=$(curl -s -k ${headers} -H ${length} -d "${issuereq}" "${issueurl}")
     echo "${resp}" | jq  '.'  1>&2
