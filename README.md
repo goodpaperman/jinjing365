@@ -23,6 +23,7 @@ modify following fields:
 obtain by network package capture APP (e.g. VNET) under android platform
 ![vnet overview](https://files-cdn.cnblogs.com/files/goodcitizen/vnet_view.bmp?t=1675062652)
 ![vnet capture](https://files-cdn.cnblogs.com/files/goodcitizen/vnet_capture.bmp?t=1675062645)
+
 select one that not loopback (127.0.0.1)
 # note
 support more than one car under same cardid, need indicate the car number (vehicle) in config.ini, this field is required
