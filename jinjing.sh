@@ -194,13 +194,14 @@ function main()
              exit 1
         fi
 
-        if [ "${type}" != "${outside6ring}" ]; then 
-            echo "have permits with type <${type}> != <${outside6ring}>, can not issue new permit!"
-            exit 1
-        fi
-    
+        # we can issue permit outside sixth ring when last day of permit inside sixth ring, so here just ignore..
+        # if [ "${type}" != "${outside6ring}" ]; then 
+        #     echo "have permits with type <${type}> != <${outside6ring}>, can not issue new permit!"
+        #     exit 1
+        # fi
+
         echo "${man} [${card}] issue permits on <${vehicle}> with type '${type}' status: ${status}"
-        # status may 审核通过(生效中) or 审核通过(待生效) or 审核通过(已失效) or 审核中 or 失败(审核不通过) or 取消办理中 or 已取消
+        # status may 审核通过(生效中) or 审核通过(待生效) or 审核通过(已失效) or 审核通过(已作废) or 审核中 or 失败(审核不通过) or 取消办理中 or 已取消
         #if [ "${status:0:4}" = "审核通过" ]; then 
         case ${status} in
             审核通过*) 
@@ -212,7 +213,7 @@ function main()
                     exit 1
                 fi
     
-                if [ "${status}" = "审核通过(已失效)" ]; then 
+                if [ "${status}" = "审核通过(已失效)" -o "${status}" = "审核通过(已作废)" ]; then 
                     # treate invalid permit as no permit
                     echo "invalid permit find under <${vehicle}>, try issue new.."
                 else 
