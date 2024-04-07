@@ -59,7 +59,7 @@ function main()
     local userid=$(grep '^userid=' config.ini | head -1 | awk -F'=' '{print $2}')
     local vehicle=$(grep '^vehicle=' config.ini | head -1 | awk -F'=' '{print $2}')
     local auth=$(grep '^authorization=' config.ini | head -1 | awk -F'=' '{print $2}')
-    local source=$(grep '^source=' config.ini | head -1 | awk -F'=' '{print $2}')
+    # local source=$(grep '^source=' config.ini | head -1 | awk -F'=' '{print $2}')
     local drivername=$(grep '^drivername=' config.ini | head -1 | awk -F'=' '{print $2}')
     local driverid=$(grep '^driverid=' config.ini | head -1 | awk -F'=' '{print $2}')
 
@@ -71,12 +71,12 @@ function main()
     local stateheader #=() adb shell not support =() initialize an array..
     stateheader[0]="Accept-Language:${lang}"
     stateheader[1]="User-Agent:${agent}"
-    stateheader[2]="source:${source}"
-    stateheader[3]="authorization:${auth}"
-    stateheader[4]="Content-Type:${content}"
-    stateheader[5]="Host:${host}"
-    stateheader[6]="Connection:Keep-Alive"
-    stateheader[7]="Accept-Encoding:gzip"
+    # stateheader[2]="source:${source}"
+    stateheader[2]="authorization:${auth}"
+    stateheader[3]="Content-Type:${content}"
+    stateheader[4]="Host:${host}"
+    stateheader[5]="Connection:Keep-Alive"
+    stateheader[6]="Accept-Encoding:gzip"
     # prevent whole time be truncated to only date
     # for reuse, add content-length alone here..
     local bytes=$(echo ${issuereq} | wc -c)
