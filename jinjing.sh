@@ -270,7 +270,7 @@ function main()
 
     # issue new permit request
     echo "new permit will start from ${issuedate}"
-    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd }')
+    local issuereq=$(cat issuereq.json | jq --arg hphm "${vehicle}" --arg hpzl "${hpzl}" --arg vid "${vid}" --arg jjrq "${issuedate}" --arg jsrxm "${drivername}" --arg jszh "${driverid}" --arg sfzmhm "${userid}" --arg timestamp $(date "+%s000") -c '{ dabh, hphm: $hphm, hpzl: $hpzl, vId: $vid, jjdq, jjlk, jjlkmc, jjmd, jjmdmc, jjrq: $jjrq, jjzzl, jsrxm: $jsrxm, jszh: $jszh, sfzmhm: $sfzmhm, xxdz, sqdzbdjd, sqdzbdwd, sfzj }')
     echo "issue req: ${issuereq}" 1>&2
     # time="time:$(date '+%Y-%m-%d %H:%M:%S')"
     bytes=$(echo ${issuereq} | wc -c)
